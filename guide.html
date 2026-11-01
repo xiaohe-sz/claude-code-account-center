@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Code Account Center — user guide</title>
+  <meta name="description" content="Unofficial local user guide for Claude Code Account Center on macOS Apple Silicon.">
+  <style>
+    :root {
+      --bg: #f3f0e8;
+      --ink: #1c1915;
+      --muted: #5c564c;
+      --line: #ddd4c4;
+      --card: #fffdf8;
+      --accent: #0f5c4c;
+      --accent-soft: #e5f2ee;
+      --warn: #8a4b12;
+      --warn-bg: #fff4e6;
+      --pass: #0f5c4c;
+      --issue: #8a4b12;
+      --unknown: #3d4a66;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 1.02rem;
+      line-height: 1.6;
+    }
+    a { color: var(--accent); }
+    a:hover { text-decoration-thickness: 2px; }
+    header, main, footer { width: min(1080px, calc(100% - 2rem)); margin-inline: auto; }
+    header { padding: 2.2rem 0 1rem; }
+    .eyebrow {
+      margin: 0 0 0.4rem;
+      color: var(--warn);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    h1 { margin: 0 0 0.6rem; font-size: clamp(1.7rem, 3vw, 2.4rem); line-height: 1.2; }
+    h2 { margin: 0 0 0.8rem; font-size: clamp(1.25rem, 2vw, 1.55rem); line-height: 1.3; }
+    h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+    p { margin: 0.6rem 0; }
+    .lede { font-size: 1.08rem; }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: rgba(243, 240, 232, 0.94);
+      border-block: 1px solid var(--line);
+      padding: 0.7rem 0;
+    }
+    nav ul {
+      width: min(1080px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.8rem;
+    }
+    nav a { text-decoration: none; font-size: 0.92rem; }
+    nav a:hover { text-decoration: underline; }
+    section {
+      margin: 1.2rem 0;
+      padding: 1.1rem 1rem 1.2rem;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+    .pair {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem 1.4rem;
+    }
+    article {
+      min-width: 0;
+      padding-top: 0.2rem;
+    }
+    article + article { border-top: 1px dashed var(--line); padding-top: 1rem; }
+    .lang {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .note, .warn {
+      margin: 0.8rem 0;
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+    }
+    .note { background: var(--accent-soft); }
+    .warn { background: var(--warn-bg); }
+    code, pre { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+    code { font-size: 0.92em; }
+    pre {
+      max-width: 100%;
+      overflow-x: auto;
+      padding: 0.8rem 0.9rem;
+      background: #f6f3ec;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--line); }
+    th { font-size: 0.85rem; color: var(--muted); }
+    .tag { font-weight: 700; }
+    .tag.pass { color: var(--pass); }
+    .tag.issue { color: var(--issue); }
+    .tag.unverified { color: var(--unknown); }
+    footer { padding: 0.4rem 0 2.4rem; color: var(--muted); }
+    @media (min-width: 900px) {
+      .pair { grid-template-columns: 1fr 1fr; }
+      article + article { border-top: 0; padding-top: 0.2rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Unofficial · 非官方 · not from Anthropic</p>
+    <h1>Claude Code Account Center</h1>
+    <p class="lede">A local user guide for the macOS Apple Silicon launcher. English is on the left on a wide screen, and 中文 follows in the same section. On a phone, English comes first and 中文 follows.</p>
+    <p lang="zh-Hans">这是给 Apple Silicon Mac 用的本机说明。宽屏时英文在左、中文在右；手机上先显示英文，再显示中文。</p>
+    <p>This project is not affiliated with or endorsed by Anthropic. It does not replace the official Claude Code CLI. The CLI still runs in Terminal.</p>
+    <p lang="zh-Hans">本项目与 Anthropic 没有隶属或背书关系。它不代替官方 Claude Code CLI。CLI 仍然在 Terminal 里运行。</p>
+    <div class="warn">
+      <p><strong>Version 0.1.0.</strong> The window can add local accounts, dispatch official login, check official status, open projects, configure an optional official status-line snapshot, and run read-only network observations after you click. It does not switch the Mac-wide account or contain an automatic account switcher. Missing quota data and unrun checks remain unknown or unverified.</p>
+      <p lang="zh-Hans"><strong>当前是 0.1.0。</strong>窗口可以添加本机账号、派发官方登录、检查官方状态、打开项目、配置可选的官方状态栏快照，并在你点击后进行只读网络观察。它不会切换整台 Mac 的默认账号，也没有自动换号。额度数据缺失时保持未知，未运行的检查保持未验证。</p>
+    </div>
+    <p>Examples on this page use <code>person@example.com</code> and <code>~/Projects/demo</code>. They are placeholders. Do not put a real email, token, log, address, or home-folder path into a screenshot.</p>
+    <p lang="zh-Hans">本页例子只用 <code>person@example.com</code> 和 <code>~/Projects/demo</code> 这种占位符。截图里不要放真实邮箱、令牌、日志、地址或家目录路径。</p>
+  </header>
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#install">Install 安装</a></li>
+      <li><a href="#account">Account 账号</a></li>
+      <li><a href="#login">Login 登录</a></li>
+      <li><a href="#project">Project 项目</a></li>
+      <li><a href="#launch">Launch 开工</a></li>
+      <li><a href="#quota">Quota 额度</a></li>
+      <li><a href="#network">Network 网络</a></li>
+      <li><a href="#webrtc">WebRTC</a></li>
+      <li><a href="#privacy">Privacy 隐私</a></li>
+      <li><a href="#security">Safety 安全</a></li>
+      <li><a href="#trouble">Fixes 排查</a></li>
+      <li><a href="#uninstall">Remove 卸载</a></li>
+    </ul>
+  </nav>
+  <main>
+    <section id="install">
+      <h2>Install</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>Build from source on the Apple Silicon Mac you will use. These docs do not offer a downloadable app. You need macOS 13 or newer, Node.js 20 or newer, the official Claude Code CLI, and Apple's command-line developer tools.</p>
+          <p>Official CLI install: <a href="https://code.claude.com/docs/en/quickstart">Claude Code quickstart</a>. Node.js: <a href="https://nodejs.org/">nodejs.org</a>. This repository has no package dependencies, so there is no install step before the two commands.</p>
+          <pre><code>npm test
+npm run build
+open "dist/Claude Code Account Center.app"</code></pre>
+          <p>Run them from the repository root. The app is <code>dist/Claude Code Account Center.app</code>. The build signs that copy only with a local ad-hoc signature. It is not a Developer ID signature and it is not notarized. If macOS shows a warning, read <a href="https://support.apple.com/en-us/102445">Apple's own page</a>. This guide does not tell you how to turn off Gatekeeper.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>在你要使用的那台 Apple Silicon Mac 上从源码构建。这套文档不提供可下载的应用。你需要 macOS 13 或更新版本、Node.js 20 或更新版本、官方 Claude Code CLI，以及 Apple 的命令行开发工具。</p>
+          <p>官方 CLI 安装见 <a href="https://code.claude.com/docs/en/quickstart">Claude Code 快速开始</a>。Node.js 见 <a href="https://nodejs.org/">nodejs.org</a>。这个仓库没有依赖包，所以两条命令之前不需要再安装包。</p>
+          <pre><code>npm test
+npm run build
+open "dist/Claude Code Account Center.app"</code></pre>
+          <p>在仓库根目录运行。应用是 <code>dist/Claude Code Account Center.app</code>。构建只给这份副本做本机 ad-hoc 签名。这不是 Developer ID 签名，也没有公证。macOS 如果报警，请读 <a href="https://support.apple.com/en-us/102445">Apple 自己的说明</a>。本指南不写如何关闭 Gatekeeper。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="account">
+      <h2>Add the first account</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>An account here is a label plus a private configuration directory. You can also store an expected email, such as <code>person@example.com</code>, so a later status check can compare it. You do not enter a password or a token.</p>
+          <p>The core creates <code>accounts/&lt;id&gt;/config</code> under <code>~/Library/Application Support/ClaudeCodeAccountCenter</code>, unless <code>CCAC_STATE_DIR</code> points somewhere else. Processes started for that account receive <code>CLAUDE_CONFIG_DIR</code> set to that directory. Another account gets a different directory. The Mac-wide Claude configuration is not switched.</p>
+          <div class="note">Click <strong>Add account</strong> in the window. A label is required; the expected email is optional. Refreshing shows the local account, its official status when available, and its configuration path.</div>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>这里的一个账号，是一个标签加上一个私有配置目录。你也可以存一个预期邮箱，例如 <code>person@example.com</code>，方便以后的状态检查做对照。不需要输入密码或令牌。</p>
+          <p>核心会在 <code>~/Library/Application Support/ClaudeCodeAccountCenter</code> 下面建立 <code>accounts/&lt;id&gt;/config</code>。如果设置了 <code>CCAC_STATE_DIR</code>，就用那个位置。为这个账号启动的进程会把 <code>CLAUDE_CONFIG_DIR</code> 设成这个目录。另一个账号用另一个目录。整台 Mac 的 Claude 配置不会被换掉。</p>
+          <div class="note">点击窗口里的「添加账号」。名称必填，预期邮箱选填。刷新后会显示本机账号、能取得的官方状态，以及它的配置路径。</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="login">
+      <h2>Official login</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>Login opens the macOS Terminal app and runs the official CLI as <code>auth login</code>, with the working directory set to that account's configuration directory. No extra login flags are added. The official CLI leads you through its own browser sign-in. Anthropic describes that flow in the <a href="https://code.claude.com/docs/en/authentication">authentication docs</a>.</p>
+          <p>This launcher does not capture the login text, does not ask you to paste a session, and does not finish the website login for you. Terminal must be allowed under Privacy &amp; Security → Automation. A successful open means Terminal accepted the script, not that sign-in is finished.</p>
+          <p>Login does not need a project, and it does not change the last-project memory.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>登录会打开 macOS 的 Terminal，在该账号的配置目录里运行官方 CLI 的 <code>auth login</code>。不会附加别的登录参数。官方 CLI 会带你走它自己的浏览器登录。Anthropic 在<a href="https://code.claude.com/docs/en/authentication">认证文档</a>里说明了这个过程。</p>
+          <p>启动器不抓取登录文字，不要求你粘贴会话，也不替你完成网站登录。需要在「隐私与安全性 → 自动化」里允许控制 Terminal。打开成功只表示 Terminal 接受了脚本，不表示登录已经完成。</p>
+          <p>登录不需要项目，也不会改上次项目的记录。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="project">
+      <h2>Add a project</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>A project is an existing local directory, for example <code>~/Projects/demo</code>, plus a short label. The path has to be a real directory you can enter. The same path is not added twice. The stored path is metadata for the launcher. It is not uploaded.</p>
+          <p>You can keep many projects. Each account remembers at most one last project. Choosing a project stores that memory. A later launch can reuse it.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>项目是一个已经存在的本机目录，例如 <code>~/Projects/demo</code>，再加上一个短标签。路径必须是你能进入的真实目录。同一个路径不会添加两次。存下来的路径只是启动器的元数据，不会上传。</p>
+          <p>可以保存很多项目。每个账号最多记住一个上次项目。选中一个项目会记下它。之后的开工可以沿用。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="launch">
+      <h2>Launch</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>A launch opens Terminal in the chosen project directory, or in the account's last project when you do not choose one. If there is no last project, launch stops instead of guessing a folder. The official CLI starts with no extra arguments. <code>CLAUDE_CONFIG_DIR</code> points at that account only for this process.</p>
+          <p>Before starting, the core asks the official CLI for authentication status. Launch continues only for a logged-in <code>claude.ai</code> session. If the status includes a configuration directory, it must be this account's directory. If both the stored email and the status email are present, they must match, as with <code>person@example.com</code>. A launch that starts the official CLI stores that project. A launch that stops on this check leaves the previous last project unchanged.</p>
+          <p>Nothing switches accounts by itself when a session ends. The next launch uses the account you start.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>开工会在你选的项目目录里打开 Terminal；你没有另选时，就用这个账号的上次项目。如果还没有上次项目，开工会停下来，不会猜一个文件夹。官方 CLI 启动时不带额外参数。这个进程的 <code>CLAUDE_CONFIG_DIR</code> 只指向该账号。</p>
+          <p>启动前，核心会向官方 CLI 查询认证状态。只有已登录的 <code>claude.ai</code> 会话才会继续。状态里如果带了配置目录，必须是这个账号的目录。本地邮箱和状态邮箱都有值时，必须一致，例如 <code>person@example.com</code>。开工若已启动官方 CLI，会记下这个项目。检查没通过而停下时，原来的上次项目保持不变。</p>
+          <p>会话结束时不会自己换账号。下一次开工用的是你启动的那个账号。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="quota">
+      <h2>Optional quota snapshot</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>This launcher does not call a usage API. Click <strong>Enable official status-line snapshot</strong> to add its command to that account's official <a href="https://code.claude.com/docs/en/statusline">status line</a> settings. Other settings are preserved. A different existing <code>statusLine</code> command causes a conflict and is not overwritten.</p>
+          <p>When the official CLI supplies <code>rate_limits.five_hour</code> or <code>rate_limits.seven_day</code>, the local snapshot keeps only the observation time, each valid used percentage, and its reset time. The window can then read that local file; it does not refresh a live balance. A missing window or a reset time in the past stays <strong>unknown</strong>. Unknown is not zero.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>这个启动器不调用额度接口。点击「启用官方状态栏快照」，才会把它的命令加入该账号的官方 <a href="https://code.claude.com/docs/en/statusline">status line</a> 设置。其他设置会保留。如果已经有不同的 <code>statusLine</code> 命令，就会提示冲突，不会覆盖。</p>
+          <p>官方 CLI 提供 <code>rate_limits.five_hour</code> 或 <code>rate_limits.seven_day</code> 时，本地快照只保留观察时间、每个有效的已用百分比和对应重置时间。窗口读取的是这份本地文件，不会刷新实时余额。窗口缺失或重置时间已过时保持<strong>未知</strong>。未知不是 0。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="network">
+      <h2>Four network results</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>The self-check is four separate read-only observations. It does not change DNS, TUN, or proxy settings. The first three run only after you click <strong>Start read-only check</strong>. The browser layer stays <span class="tag unverified">unverified</span> in the app because only the separate browser page can perform it.</p>
+          <table>
+            <thead>
+              <tr><th>Result</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="tag pass">pass</td><td>This one check finished, and it did not see the disagreement it looks for. It does not rate the account or any later lookup.</td></tr>
+              <tr><td class="tag issue">issue</td><td>This one check finished, and you should look at the difference it found.</td></tr>
+              <tr><td class="tag unverified">unverified</td><td>The check did not run or did not finish. This is not a pass.</td></tr>
+            </tbody>
+          </table>
+          <table>
+            <thead>
+              <tr><th>Layer</th><th>What one look means</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Exit</td><td>The source address of that one request, as the answering service sees it.</td></tr>
+              <tr><td>Route and IPv6</td><td>Whether this one look at the current route shows an IPv6 path.</td></tr>
+              <tr><td>DNS</td><td>One resolver observation for one lookup. It does not describe the next lookup.</td></tr>
+              <tr><td>WebRTC</td><td>A browser page you open yourself. See the next section.</td></tr>
+            </tbody>
+          </table>
+          <p>The exit layer displays the observed public IP so you can compare it with the browser page. Redact that address before publishing a screenshot.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>网络自查是四项分开的只读观察。它不修改 DNS、TUN 或代理。前三项只有在你点击「开始只读检查」后才会运行。应用里的浏览器层保持 <span class="tag unverified">unverified</span>（未验证），因为只有单独的浏览器页面才能执行它。</p>
+          <table>
+            <thead>
+              <tr><th>结果</th><th>含义</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="tag pass">pass</td><td>这一项做完了，而且没有看到它要找的差异。它不评价账号，也不评价之后的查询。</td></tr>
+              <tr><td class="tag issue">issue</td><td>这一项做完了，而且你应该看一看它发现的差异。</td></tr>
+              <tr><td class="tag unverified">unverified</td><td>这项没有运行，或没有做完。这不是通过。</td></tr>
+            </tbody>
+          </table>
+          <table>
+            <thead>
+              <tr><th>层级</th><th>看一次表示什么</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>出口</td><td>应答服务看到的、这一次请求的来源地址。</td></tr>
+              <tr><td>路由与 IPv6</td><td>这一次查看当前路由时，是否出现 IPv6 路径。</td></tr>
+              <tr><td>DNS</td><td>对一次查询做一次解析器观察。它不描述下一次查询。</td></tr>
+              <tr><td>WebRTC</td><td>你自己打开的浏览器页面。见下一节。</td></tr>
+            </tbody>
+          </table>
+          <p>出口层会在窗口里显示观察到的公共 IP，方便与浏览器页面对照。公开截图前请遮住这个地址。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="webrtc">
+      <h2>Manual WebRTC page</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>WebRTC is a browser feature that can ask a STUN server how your browser appears on the network. Click <strong>Open WebRTC check page</strong>, read its privacy note, then click the page's own start button. Opening this guide does not run a probe, and this file contains no probe.</p>
+          <p>The STUN service receives the request and the source address needed to answer it. On the check page, <span class="tag pass">pass</span> means candidate gathering finished, not that the browser is leak-free. A timeout or no usable result is <span class="tag unverified">unverified</span>. The page does not automatically assign <span class="tag issue">issue</span>; compare its server-reflexive address with the CLI exit observation yourself. Closing the page drops its result, and the launcher does not write it into local state.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>WebRTC 是浏览器的一项能力，可以向 STUN 服务器询问浏览器在网络上呈现的地址。点击「打开 WebRTC 检查页」，读完隐私提示，再点击页面自己的开始按钮。打开本指南不会运行探测，这个文件里也没有探测程序。</p>
+          <p>STUN 服务会收到这次请求以及完成应答所需的来源地址。在检查页里，<span class="tag pass">pass</span> 只表示候选地址收集完成，不表示浏览器没有泄露。超时或没有可用结果是 <span class="tag unverified">unverified</span>。页面不会自动判 <span class="tag issue">issue</span>；请自己把它的服务器反射地址与 CLI 出口观察作比较。关掉页面会丢弃页面结果，启动器不会把它写入本地状态。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="privacy">
+      <h2>Privacy</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>The full note is <a href="PRIVACY.md">PRIVACY.md</a>. Launcher metadata stays on this Mac: labels, optional expected email, project paths, last project, and the per-account configuration directory. Tokens and sessions are not part of that metadata. The official CLI may write its own files into the configuration directory after you log in. Those files are the official client's, and this launcher does not upload them.</p>
+          <p>A quota snapshot is limited to the observation time, valid used percentages, reset times, and a small status marker. It never stores the raw status-line payload, session id, transcript path, workspace, cost, email, or token. Public-IP and DNS observations start only after your click; STUN requires the browser page's separate click. A browser result is not persisted. The official CLI's own data use is Anthropic's: <a href="https://code.claude.com/docs/en/data-usage">data usage</a> and <a href="https://privacy.claude.com/">privacy.claude.com</a>.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>完整说明在 <a href="PRIVACY.md">PRIVACY.md</a>。启动器的元数据留在这台 Mac 上：标签、可选的预期邮箱、项目路径、上次项目，以及每个账号的配置目录。令牌和会话不属于这些元数据。你完成官方登录后，官方 CLI 可能往配置目录写入它自己的文件。那些文件属于官方客户端，启动器不上传它们。</p>
+          <p>额度快照只保留观察时间、有效的已用百分比、重置时间和少量状态标记。它不会保存 status line 原始数据、会话编号、会话记录路径、工作区、费用、邮箱或令牌。公共 IP 和 DNS 观察只有在你点击后才运行；STUN 还需要浏览器页面里的另一次点击。浏览器结果不会被持久保存。官方 CLI 自己的数据使用以 Anthropic 为准：<a href="https://code.claude.com/docs/en/data-usage">数据使用</a>和 <a href="https://privacy.claude.com/">privacy.claude.com</a>。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="security">
+      <h2>Safety</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>The reporting route is <a href="SECURITY.md">SECURITY.md</a>. Use a GitHub Security Advisory when private reporting is enabled. If it is not, open an Issue and leave out secrets. This launcher does not read official credential files, save tokens, or relay Claude.ai sessions. The documented status response is parsed in memory; only allowlisted fields reach the window, and the raw JSON is not persisted. It does not change the default account for the whole Mac, does not switch accounts automatically, and does not replace the official login.</p>
+          <p>It does not change system DNS, TUN, or proxy settings. It does not bypass macOS permissions. Finding <code>claude</code> on disk is not a check that Anthropic signed that file. A finished network observation would not be a statement about account enforcement.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>报告方式在 <a href="SECURITY.md">SECURITY.md</a>。私人报告已启用时，走 GitHub Security Advisory。还没启用时，开一条 Issue，并且不要附上秘密。启动器不读取官方凭据文件，不保存令牌，也不中转 Claude.ai 会话。官方状态响应只在本机内存解析；窗口只收到允许列出的字段，原始 JSON 不会落盘。它不更换整台 Mac 的默认账号，不自动换号，也不代替官方登录。</p>
+          <p>它不修改系统 DNS、TUN 或代理，也不绕过 macOS 权限。在磁盘上找到 <code>claude</code>，并不能证明那个文件由 Anthropic 签名。做完一次网络观察，也不说明平台会如何处理账号。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="trouble">
+      <h2>When something fails</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>The longer list is <a href="TROUBLESHOOTING.md">TROUBLESHOOTING.md</a>.</p>
+          <ul>
+            <li>Node.js missing: install 20 or newer, or set <code>CCAC_NODE_PATH</code> to the absolute path of <code>node</code>.</li>
+            <li>CLI missing: install the official CLI, or set <code>CLAUDE_CODE_CLI</code>.</li>
+            <li>Terminal did not open: allow Automation for Terminal, then try again.</li>
+            <li>Not logged in: finish <code>auth login</code> in that account's directory. Other authentication methods are not launched.</li>
+            <li>Quota unknown: configure the optional status line, use the official CLI, then read the local snapshot. Missing or reset windows remain unknown.</li>
+            <li><code>statusLine</code> already set: leave the official setting in place. This app does not overwrite a different command.</li>
+            <li>Network unverified: click the check button and review the per-layer reason. WebRTC also requires the browser page's own click.</li>
+            <li>macOS warning on open: the build is ad-hoc only. Do not follow instructions that disable Gatekeeper.</li>
+          </ul>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>更完整的列表在<a href="TROUBLESHOOTING.md">故障排查</a>。</p>
+          <ul>
+            <li>找不到 Node.js：安装 20 或更新版本，或把 <code>CCAC_NODE_PATH</code> 设成 <code>node</code> 的绝对路径。</li>
+            <li>找不到 CLI：安装官方 CLI，或设置 <code>CLAUDE_CODE_CLI</code>。</li>
+            <li>Terminal 没有打开：在自动化里允许控制 Terminal，然后再试。</li>
+            <li>还没登录：在该账号的目录里完成 <code>auth login</code>。其他认证方式不会被拿来开工。</li>
+            <li>额度未知：先配置可选状态栏，再使用官方 CLI，然后读取本地快照。窗口缺失或已经重置时仍是未知。</li>
+            <li>已经设置了 <code>statusLine</code>：保留官方设置。本应用不会覆盖不同的命令。</li>
+            <li>网络未验证：点击检查按钮并查看每层原因。WebRTC 还需要在浏览器页面里再次点击。</li>
+            <li>打开时 macOS 报警：构建只有 ad-hoc 签名。不要按关闭 Gatekeeper 的办法去做。</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="uninstall">
+      <h2>Uninstall</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>Quit the app. Delete the copy you built, <code>dist/Claude Code Account Center.app</code>. That removes the launcher from this repository's build output. It does not uninstall the official <code>claude</code> program.</p>
+          <p>Launcher metadata, and the per-account configuration directories, live in <code>~/Library/Application Support/ClaudeCodeAccountCenter</code> or in <code>CCAC_STATE_DIR</code>. Remove that folder only when you want the local accounts gone. The official CLI may have written its own login files inside each <code>config</code> directory. Deleting the folder removes that local copy. To sign out of the official client first, use <code>claude auth logout</code> with <code>CLAUDE_CONFIG_DIR</code> set to that account's directory. See the <a href="https://code.claude.com/docs/en/cli-reference">CLI reference</a>.</p>
+          <p>A default <code>~/.claude</code> directory used outside this launcher is separate. Uninstalling this app does not delete it.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>先退出应用。删掉你构建出来的 <code>dist/Claude Code Account Center.app</code>。这会去掉本仓库构建产物里的启动器，不会卸载官方 <code>claude</code> 程序。</p>
+          <p>启动器元数据和每个账号的配置目录，在 <code>~/Library/Application Support/ClaudeCodeAccountCenter</code>，或在 <code>CCAC_STATE_DIR</code>。只有当你想去掉这些本地账号时，才删除那个文件夹。官方 CLI 可能已经在每个 <code>config</code> 目录里写入它自己的登录文件。删掉文件夹，就是删掉这份本地副本。如果要先退出官方客户端，在该账号的目录上设置 <code>CLAUDE_CONFIG_DIR</code>，再运行 <code>claude auth logout</code>。见<a href="https://code.claude.com/docs/en/cli-reference">CLI 参考</a>。</p>
+          <p>启动器之外使用的默认 <code>~/.claude</code> 是另一份目录。卸载本应用不会删除它。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <p>Author 作者: xiaohe-sz, a front-line real-estate agent in Shenzhen, can help with Shenzhen home-buying questions and also shares AI programming practice already in use. 深圳一线房产中介，可提供深圳购房咨询，并分享已经在用的 AI 编程实践与技术。No other contact is listed here. 这里不另列联系方式。</p>
+    <p>Source 源码: <a href="https://github.com/xiaohe-sz/claude-code-account-center">github.com/xiaohe-sz/claude-code-account-center</a>. <a href="LICENSE">MIT</a>, copyright 2026 xiaohe-sz. Unofficial 非官方. Not an Anthropic product.</p>
+  </footer>
+</body>
+</html>

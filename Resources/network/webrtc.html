@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebRTC 浏览器观察 · Browser check</title>
+  <style>
+    body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; margin: 2rem; max-width: 48rem; line-height: 1.55; color: #211f1c; }
+    button { font-size: 1rem; padding: .55rem .9rem; cursor: pointer; }
+    button:disabled { cursor: wait; }
+    pre { background: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; padding: .85rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .note { background: #fff5e7; border-radius: 6px; padding: .8rem 1rem; }
+  </style>
+</head>
+<body>
+  <h1>WebRTC 浏览器观察</h1>
+  <p lang="zh-Hans">只有点击下面的按钮，这个本机页面才会创建一次临时 WebRTC 连接，并向 <code>stun:stun.cloudflare.com:3478</code> 发出 STUN 请求。STUN 服务会收到这次请求及其来源地址；页面列出的 <code>srflx</code> 是 STUN 观察到的地址，不是 relay（中继）地址。</p>
+  <p lang="en">Nothing runs until you click the button. One temporary WebRTC gathering operation then contacts the STUN server shown above. That server receives the probe and its source address. A server-reflexive (<code>srflx</code>) candidate is what STUN observes; it is not a relay candidate.</p>
+  <p class="note" lang="zh-Hans">页面没有统计上报，不把结果发给应用或作者，也不写 Cookie、本地存储或启动器文件。关闭页面即丢弃结果。它不会修改系统或浏览器的 DNS、TUN、代理设置。单次观察不能证明没有泄露，也不能代表其他浏览器或之后的连接。</p>
+  <p><button id="run" type="button">开始一次观察 · Run once</button></p>
+  <pre id="result" aria-live="polite">unverified · 尚未运行 / not run</pre>
+  <p lang="zh-Hans"><strong>状态含义：</strong><code>pass</code> 只表示候选地址收集完成，不是“安全”或“零泄露”；<code>unverified</code> 表示未完成、超时或没有可用结果。本页不自动判 <code>issue</code>：请自行比较 <code>srflx</code> 与应用里的 CLI 出口地址，出现无法解释的差异再进一步排查。</p>
+  <script>
+    const button = document.getElementById('run');
+    const output = document.getElementById('result');
+    let running = false;
+
+    function unique(entries) {
+      const seen = new Set();
+      return entries.filter(entry => {
+        const key = entry.type + '|' + entry.address;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function render(status, entries, note) {
+      const lines = [status];
+      for (const entry of unique(entries)) lines.push(entry.type + ': ' + entry.address);
+      if (!entries.length) lines.push('No ICE candidates reported. / 未收到候选地址。');
+      if (note) lines.push(note);
+      output.textContent = lines.join('\n');
+    }
+
+    function runOnce() {
+      if (running) return;
+      running = true;
+      button.disabled = true;
+      const entries = [];
+      let peer;
+      let finished = false;
+      const finalize = (status, note) => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        try { if (peer) peer.close(); } catch {}
+        render(status, entries, note);
+        running = false;
+        button.disabled = false;
+      };
+      const timer = setTimeout(() => {
+        finalize('unverified · 12 秒内未完成 / timed out', 'Partial candidates, if any, are not a completed check.');
+      }, 12000);
+      try {
+        peer = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }] });
+        peer.createDataChannel('ccac-one-time-check');
+        peer.onicecandidate = event => {
+          if (!event.candidate) {
+            finalize(entries.length ? 'pass · 收集完成 / gathering finished' : 'unverified · 无候选地址 / no candidates',
+              'pass means finished, not leak-free. / pass 只表示完成，不代表无泄露。');
+            return;
+          }
+          entries.push({
+            type: String(event.candidate.type || 'unknown'),
+            address: String(event.candidate.address || event.candidate.ip || '?')
+          });
+          render('unverified · 收集中 / gathering', entries, null);
+        };
+        peer.createOffer()
+          .then(offer => peer.setLocalDescription(offer))
+          .catch(() => finalize('unverified · 无法开始 / could not start', 'STUN observation did not complete.'));
+      } catch {
+        finalize('unverified · 浏览器不支持或已阻止 / unavailable', 'No WebRTC observation was completed.');
+      }
+    }
+
+    button.addEventListener('click', runOnce);
+  </script>
+</body>
+</html>
