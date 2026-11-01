@@ -160,21 +160,23 @@
       <div class="pair">
         <article lang="en">
           <p class="lang">English</p>
-          <p>Build from source on the Apple Silicon Mac you will use. These docs do not offer a downloadable app. You need macOS 13 or newer, Node.js 20 or newer, the official Claude Code CLI, and Apple's command-line developer tools.</p>
-          <p>Official CLI install: <a href="https://code.claude.com/docs/en/quickstart">Claude Code quickstart</a>. Node.js: <a href="https://nodejs.org/">nodejs.org</a>. This repository has no package dependencies, so there is no install step before the two commands.</p>
+          <p>Download the <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg">Apple Silicon DMG</a> from <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0">v0.1.0</a>, open it, and drag <strong>Claude Code Account Center</strong> into <strong>Applications</strong>. The release also includes <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt">SHA-256 checksums</a>.</p>
+          <p>You need macOS 13 or newer, Node.js 20 or newer from <a href="https://nodejs.org/">nodejs.org</a>, and the official Claude Code CLI installed with <a href="https://code.claude.com/docs/en/quickstart">Anthropic's quickstart</a>. The app does not install those prerequisites.</p>
+          <p>The DMG has a local ad-hoc signature, not a Developer ID signature or Apple notarization. If macOS shows a warning, read <a href="https://support.apple.com/en-us/102445">Apple's own page</a>. This guide does not tell you how to turn off Gatekeeper or remove quarantine attributes.</p>
+          <p>To build instead, install Apple's command-line developer tools, then run these commands from the repository root. There are no npm dependencies.</p>
           <pre><code>npm test
 npm run build
 open "dist/Claude Code Account Center.app"</code></pre>
-          <p>Run them from the repository root. The app is <code>dist/Claude Code Account Center.app</code>. The build signs that copy only with a local ad-hoc signature. It is not a Developer ID signature and it is not notarized. If macOS shows a warning, read <a href="https://support.apple.com/en-us/102445">Apple's own page</a>. This guide does not tell you how to turn off Gatekeeper.</p>
         </article>
         <article lang="zh-Hans">
           <p class="lang">中文</p>
-          <p>在你要使用的那台 Apple Silicon Mac 上从源码构建。这套文档不提供可下载的应用。你需要 macOS 13 或更新版本、Node.js 20 或更新版本、官方 Claude Code CLI，以及 Apple 的命令行开发工具。</p>
-          <p>官方 CLI 安装见 <a href="https://code.claude.com/docs/en/quickstart">Claude Code 快速开始</a>。Node.js 见 <a href="https://nodejs.org/">nodejs.org</a>。这个仓库没有依赖包，所以两条命令之前不需要再安装包。</p>
+          <p>从 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0">v0.1.0</a> 下载 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg">Apple Silicon DMG</a>，打开后把 <strong>Claude Code Account Center</strong> 拖进 <strong>Applications（应用程序）</strong>。发布页也提供 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt">SHA-256 校验文件</a>。</p>
+          <p>你需要 macOS 13 或更新版本、<a href="https://nodejs.org/">nodejs.org</a> 提供的 Node.js 20 或更新版本，以及按 <a href="https://code.claude.com/docs/en/quickstart">Anthropic 官方快速开始</a>安装的 Claude Code CLI。应用不会替你安装这些前置软件。</p>
+          <p>DMG 只有本机 ad-hoc 签名，没有 Developer ID 签名，也没有 Apple 公证。macOS 如果报警，请读 <a href="https://support.apple.com/en-us/102445">Apple 自己的说明</a>。本指南不写如何关闭 Gatekeeper 或删除隔离属性。</p>
+          <p>如果要自己构建，先安装 Apple 命令行开发工具，再在仓库根目录运行以下命令。这个仓库没有 npm 依赖包。</p>
           <pre><code>npm test
 npm run build
 open "dist/Claude Code Account Center.app"</code></pre>
-          <p>在仓库根目录运行。应用是 <code>dist/Claude Code Account Center.app</code>。构建只给这份副本做本机 ad-hoc 签名。这不是 Developer ID 签名，也没有公证。macOS 如果报警，请读 <a href="https://support.apple.com/en-us/102445">Apple 自己的说明</a>。本指南不写如何关闭 Gatekeeper。</p>
         </article>
       </div>
     </section>

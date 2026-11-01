@@ -6,11 +6,11 @@ Claude Code Account Center is an unofficial, local macOS launcher for people who
 
 [中文说明在下方。](#中文)
 
-User guide: [guide.html](guide.html) · [Security](SECURITY.md) · [Privacy](PRIVACY.md) · [Troubleshooting](TROUBLESHOOTING.md) · [License](LICENSE)
+User guide: [Online guide](https://xiaohe-sz.github.io/claude-code-account-center/guide.html) · [Repository file](guide.html) · [Security](SECURITY.md) · [Privacy](PRIVACY.md) · [Troubleshooting](TROUBLESHOOTING.md) · [License](LICENSE)
 
 Source repository: <https://github.com/xiaohe-sz/claude-code-account-center>
 
-These pages do not claim that a GitHub Release, GitHub Pages site, star count, or download count exists.
+Current release: [v0.1.0](https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0) · [Apple Silicon DMG](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg) · [SHA-256 checksums](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt)
 
 ## What this repository does
 
@@ -28,43 +28,35 @@ Version 0.1.0 is a local SwiftUI window plus a local Node.js core. The window pr
 
 A `pass` describes one finished observation. It is not a statement about account standing, later lookups, or other programs.
 
-## Install by building the source
+## Install the release
 
-There is no binary download in this documentation. Build it on the Mac that will run it.
+You need macOS 13 or newer on Apple Silicon (`arm64`), Node.js 20 or newer from <https://nodejs.org/>, and the official Claude Code CLI installed with [Anthropic's instructions](https://code.claude.com/docs/en/quickstart). The app does not install Node.js or the official CLI for you.
 
-You need:
+1. Download the [Apple Silicon DMG](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg) from [v0.1.0](https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0). The release also includes [SHA-256 checksums](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt).
+2. Open the DMG and drag **Claude Code Account Center** into **Applications**.
+3. Open the app from Applications.
 
-- macOS 13 or newer, on Apple Silicon (`arm64`). The build stops on any other machine.
-- Node.js 20 or newer: <https://nodejs.org/>
-- The official Claude Code CLI, installed by following Anthropic's own instructions: <https://code.claude.com/docs/en/quickstart>
-- Apple's Xcode Command Line Tools, so `swiftc` is available
+The release has a local ad-hoc signature, not a Developer ID signature or Apple notarization. macOS can show a warning. Read [Apple's explanation](https://support.apple.com/en-us/102445); this project does not recommend disabling Gatekeeper or removing quarantine attributes. You can build from source instead.
 
-This repository has no npm dependencies. From the repository root:
+A graphical app does not always inherit the PATH from your shell profile. If the window cannot find Node.js, set `CCAC_NODE_PATH` to the absolute path of a Node.js 20 binary. If the official CLI is not on the default search path, set `CLAUDE_CODE_CLI` to its absolute path. See [Troubleshooting](TROUBLESHOOTING.md).
+
+### Build from source instead
+
+You also need Apple's Xcode Command Line Tools so `swiftc` is available. This repository has no npm dependencies. From the repository root:
 
 ```sh
 npm test
 npm run build
-```
-
-`npm test` runs `node --test Tests/*.test.mjs`. `npm run build` runs `Scripts/build-app.sh` and leaves the app at:
-
-```text
-dist/Claude Code Account Center.app
-```
-
-Open that built copy:
-
-```sh
 open "dist/Claude Code Account Center.app"
 ```
 
-A graphical app does not always inherit the PATH from your shell profile. If the window cannot find Node.js, set `CCAC_NODE_PATH` to the absolute path of a Node.js 20 binary. If the official CLI is not on the default search path, set `CLAUDE_CODE_CLI` to its absolute path. See [Troubleshooting](TROUBLESHOOTING.md).
+`npm test` runs `node --test Tests/*.test.mjs`. `npm run build` runs `Scripts/build-app.sh` and leaves the app at `dist/Claude Code Account Center.app`.
 
 ## Signature
 
-The build script applies a local ad-hoc signature (`codesign --sign -`) and then checks that signature. This is not a Developer ID signature, and it is not Apple notarization. These documents do not claim either one.
+The build script applies a local ad-hoc signature (`codesign --sign -`) and then checks that signature. The published DMG was built and checked the same way. This is not a Developer ID signature, and it is not Apple notarization.
 
-macOS can warn about a build that has no Developer ID and no notarization. This repository does not include instructions for turning off Gatekeeper or for stripping quarantine attributes. Build the app yourself, from this source, and read Apple's own explanation before you open a warning: <https://support.apple.com/en-us/102445>.
+macOS can warn about an app that has no Developer ID and no notarization. This repository does not include instructions for turning off Gatekeeper or for stripping quarantine attributes. Read [Apple's own explanation](https://support.apple.com/en-us/102445), or build the app yourself from this source.
 
 ## Safety boundaries
 
@@ -92,11 +84,11 @@ The author, xiaohe-sz, is a front-line real-estate agent in Shenzhen, can help w
 
 Claude Code Account Center 是一个在本机运行的 macOS 启动器，给已经在用官方 Claude Code 命令行的人准备。它运行在 Apple Silicon（苹果自研芯片，M 系列）的 Mac 上。每个人在官方 CLI（命令行程序）里登录的 Claude.ai 账号，都可以有自己单独的配置目录。Anthropic 不开发、不发布、不支持、也不认可这个项目。
 
-使用说明：[guide.html](guide.html) · [安全](SECURITY.md) · [隐私](PRIVACY.md) · [故障排查](TROUBLESHOOTING.md) · [许可证](LICENSE)
+使用说明：[在线指南](https://xiaohe-sz.github.io/claude-code-account-center/guide.html) · [仓库里的指南](guide.html) · [安全](SECURITY.md) · [隐私](PRIVACY.md) · [故障排查](TROUBLESHOOTING.md) · [许可证](LICENSE)
 
 源码仓库：<https://github.com/xiaohe-sz/claude-code-account-center>
 
-这套文档不声称仓库里已经有 Release（发布包）、GitHub Pages 网站、Star（星标）数量或下载量。
+当前发布：[v0.1.0](https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0) · [Apple Silicon DMG](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg) · [SHA-256 校验文件](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt)
 
 ## 这个仓库现在做什么
 
@@ -110,43 +102,35 @@ Claude Code Account Center 是一个在本机运行的 macOS 启动器，给已�
 
 `pass` 只描述这一次已经做完的观察。它不说明账号状态、以后的查询，或其他程序会怎样。
 
-## 安装以源码构建为准
+## 安装发布包
 
-这套文档不提供现成的下载包。请在将要运行它的那台 Mac 上构建。
+你需要一台 Apple Silicon（`arm64`）Mac，系统为 macOS 13 或更新版本；还需要 <https://nodejs.org/> 提供的 Node.js 20 或更新版本，以及按 [Anthropic 官方说明](https://code.claude.com/docs/en/quickstart)安装的 Claude Code CLI。这个应用不会替你安装 Node.js 或官方 CLI。
 
-需要：
+1. 从 [v0.1.0](https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0) 下载 [Apple Silicon DMG](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg)。同一个发布页也提供 [SHA-256 校验文件](https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt)。
+2. 打开 DMG，把 **Claude Code Account Center** 拖进 **Applications（应用程序）**。
+3. 从「应用程序」打开它。
 
-- macOS 13 或更新版本，并且是 Apple Silicon（`arm64`）。其他机器上构建会停止。
-- Node.js 20 或更新版本：<https://nodejs.org/>
-- 官方 Claude Code CLI。请按 Anthropic 自己的说明安装：<https://code.claude.com/docs/en/quickstart>
-- Apple 的 Xcode Command Line Tools（命令行开发工具），这样才有 `swiftc`
+发布包只有本机 ad-hoc 签名，没有 Developer ID 签名，也没有 Apple 公证，macOS 可能显示警告。请读 [Apple 自己的说明](https://support.apple.com/en-us/102445)；本项目不建议关闭 Gatekeeper 或删除隔离属性。你也可以选择自己从源码构建。
 
-这个仓库没有 npm 依赖包。在仓库根目录执行：
+图形应用不一定能继承 shell 配置文件里的 PATH（命令搜索路径）。窗口找不到 Node.js 时，把 `CCAC_NODE_PATH` 设成 Node.js 20 可执行文件的绝对路径。官方 CLI 不在默认搜索路径上时，把 `CLAUDE_CODE_CLI` 设成它的绝对路径。见[故障排查](TROUBLESHOOTING.md)。
+
+### 也可以从源码构建
+
+另外需要 Apple 的 Xcode Command Line Tools（命令行开发工具），这样才有 `swiftc`。这个仓库没有 npm 依赖包。在仓库根目录执行：
 
 ```sh
 npm test
 npm run build
-```
-
-`npm test` 实际运行 `node --test Tests/*.test.mjs`。`npm run build` 运行 `Scripts/build-app.sh`，应用出现在：
-
-```text
-dist/Claude Code Account Center.app
-```
-
-打开你构建出来的这份应用：
-
-```sh
 open "dist/Claude Code Account Center.app"
 ```
 
-图形应用不一定能继承 shell 配置文件里的 PATH（命令搜索路径）。窗口找不到 Node.js 时，把 `CCAC_NODE_PATH` 设成 Node.js 20 可执行文件的绝对路径。官方 CLI 不在默认搜索路径上时，把 `CLAUDE_CODE_CLI` 设成它的绝对路径。见[故障排查](TROUBLESHOOTING.md)。
+`npm test` 实际运行 `node --test Tests/*.test.mjs`。`npm run build` 运行 `Scripts/build-app.sh`，应用出现在 `dist/Claude Code Account Center.app`。
 
 ## 签名
 
-构建脚本只做本机 ad-hoc 签名（临时自签名：`codesign --sign -`），然后检查这个签名还在。这不是 Developer ID（苹果发给开发者的签名身份），也不是 Apple 公证。本文档两样都不声称已经具备。
+构建脚本只做本机 ad-hoc 签名（临时自签名：`codesign --sign -`），然后检查这个签名还在。发布的 DMG 也用同样方式构建和检查。这不是 Developer ID（苹果发给开发者的签名身份），也不是 Apple 公证。
 
-没有 Developer ID、也没有公证的构建，macOS 可能会报警。本仓库不写关闭 Gatekeeper（系统对未识别开发者的拦截）或去掉隔离属性的步骤。请自己用这份源码构建，并在处理系统警告前先读 Apple 自己的说明：<https://support.apple.com/en-us/102445>。
+没有 Developer ID、也没有公证的应用，macOS 可能会报警。本仓库不写关闭 Gatekeeper（系统对未识别开发者的拦截）或去掉隔离属性的步骤。请读 [Apple 自己的说明](https://support.apple.com/en-us/102445)，或者自己用这份源码构建。
 
 ## 安全边界
 
