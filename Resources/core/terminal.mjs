@@ -3,6 +3,10 @@ import { fileURLToPath } from 'node:url';
 import { fail } from './errors.mjs';
 import { absolutePath, executable, object, text, uuid } from './validation.mjs';
 import { runCaptured } from './official.mjs';
+import { assertNotGlobalCopy } from './global.mjs';
+
+// The first dispatch waits on macOS's "control Terminal" consent prompt.
+export const TERMINAL_DISPATCH_TIMEOUT_MS = 120_000;
 
 export const APPLE_SCRIPT = `on run argv
   tell application "Terminal"
@@ -23,6 +27,7 @@ export function createTerminalPlan({ store, adapter, accountId, projectId, actio
   // Login stays in the isolated config directory, independent of project settings.
   if (action === 'login' && projectId !== undefined) fail('INVALID_INPUT', 'Login does not accept a project.');
   const project = action === 'launch' ? store.resolveProject(accountId, projectId) : null;
+  if (action === 'launch') assertNotGlobalCopy(store, account, adapter.env?.HOME || undefined);
   const cwd = project?.path ?? account.configDir;
   const cli = adapter.invocation(account, { cwd, action });
   const runner = fileURLToPath(new URL('./terminal-runner.mjs', import.meta.url));
@@ -45,7 +50,8 @@ export function createTerminalPlan({ store, adapter, accountId, projectId, actio
 export async function openTerminal(options, { platform = process.platform, run = runCaptured } = {}) {
   if (platform !== 'darwin') fail('UNSUPPORTED_PLATFORM', 'Opening Terminal requires macOS.');
   const plan = createTerminalPlan(options);
-  const result = await run(plan.executable, plan.args, { timeoutMs: 15_000, maxBytes: 4_096 });
+  if (plan.action === 'login') await options.adapter.assertHonorsConfigDir(options.store.getAccount(plan.accountId));
+  const result = await run(plan.executable, plan.args, { timeoutMs: TERMINAL_DISPATCH_TIMEOUT_MS, maxBytes: 4_096 });
   if (result.code !== 0) fail('TERMINAL_OPEN_FAILED', 'Terminal could not be opened. Check macOS automation permission.');
   // AppleScript success only confirms dispatch, not an authenticated CLI launch.
   return { opened: true, execution: 'unconfirmed', accountId: plan.accountId,

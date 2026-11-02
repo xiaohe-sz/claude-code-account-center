@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { atomicWriteJSON, privateDirectory } from './store.mjs';
+import { atomicWriteJSON, privateDirectory, readJSON } from './store.mjs';
 import { absolutePath, LIMITS, uuid } from './validation.mjs';
 
 const STDIN_TIMEOUT_MS = 10_000;
@@ -49,9 +49,26 @@ export function snapshotFromPayload(payload, now = new Date()) {
   };
 }
 
+// A status line rendered before the first reply of a session has no rate-limit
+// windows. It must not erase an earlier observation whose windows are still open.
+export function keepsExisting(existing, snapshot, now = new Date()) {
+  if (snapshot.status === 'available' || existing === null || typeof existing !== 'object') return false;
+  if (existing.status !== 'available' || !existing.windows || typeof existing.windows !== 'object') return false;
+  const seconds = now.getTime() / 1000;
+  return ['fiveHour', 'sevenDay'].some(key => {
+    const window = existing.windows[key];
+    return window && typeof window.resetsAt === 'number' && window.resetsAt > seconds;
+  });
+}
+
 function writeSnapshot(stateDir, accountId, snapshot) {
   const usageDir = privateDirectory(path.join(stateDir, 'usage'), { create: true });
-  atomicWriteJSON(path.join(usageDir, `${accountId}.json`), snapshot);
+  const file = path.join(usageDir, `${accountId}.json`);
+  let existing = null;
+  try { existing = readJSON(file); } catch { existing = null; }
+  if (keepsExisting(existing, snapshot)) return existing;
+  atomicWriteJSON(file, snapshot);
+  return snapshot;
 }
 
 export async function readStatusLineInput(stream = process.stdin, {
@@ -96,9 +113,9 @@ function statusLineText(snapshot) {
   const parts = [];
   for (const [key, label] of [['fiveHour', '5h'], ['sevenDay', '7d']]) {
     const window = snapshot.windows[key];
-    if (window) parts.push(`${label} ${window.usedPercentage.toFixed(1)}% used`);
+    if (window && Number.isFinite(window.usedPercentage)) parts.push(`${label} ${window.usedPercentage.toFixed(1)}% used`);
   }
-  return `CCAC ${parts.join(' · ')}`;
+  return parts.length ? `CCAC ${parts.join(' · ')}` : 'CCAC usage unknown';
 }
 
 async function main() {
@@ -123,17 +140,18 @@ async function main() {
 
   const input = await readStatusLineInput();
   const snapshot = input.ok ? snapshotFromPayload(input.payload) : emptySnapshot(input.reason, new Date());
+  let shown = snapshot;
   try {
-    writeSnapshot(stateDir, accountId, snapshot);
+    shown = writeSnapshot(stateDir, accountId, snapshot);
   } catch {
     process.stdout.write('CCAC usage unknown\n');
     process.stderr.write('usage-statusline: snapshot could not be saved\n');
     process.exitCode = 2;
     return;
   }
-  process.stdout.write(`${statusLineText(snapshot)}\n`);
+  process.stdout.write(`${statusLineText(shown)}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) await main();
 
-export const __testables = { normalizeWindow, statusLineText };
+export const __testables = { normalizeWindow, statusLineText, keepsExisting };

@@ -1,6 +1,6 @@
 # Troubleshooting
 
-These notes match version 0.1.0 of this repository. Examples use placeholders such as `person@example.com` and `~/Projects/demo`.
+These notes match version 0.2.0 of this repository. Examples use placeholders such as `person@example.com` and `~/Projects/demo`.
 
 [中文在后文。](#中文)
 
@@ -36,9 +36,25 @@ This search does not prove the file is Anthropic's signed build. Install it from
 
 Login and launch need permission to control Terminal. The first time, macOS may show the reason stored in the app: open the official Claude Code CLI in Terminal for the selected local account and project.
 
+The app waits up to two minutes for you to answer that macOS prompt. If the wait runs out, answer the prompt and click the button again.
+
 If opening Terminal fails, the core reports `TERMINAL_OPEN_FAILED` and asks you to check the automation permission. In System Settings, look under Privacy & Security, then Automation, and allow this app to control Terminal. Quit and reopen the app after changing that permission.
 
 A successful open only means Terminal accepted the script. Finish login in the official CLI. The launcher does not watch that login.
+
+## Login refused: the claude command ignores the account folder
+
+`CLI_IGNORES_CONFIG_DIR` means the `claude` the app found reported a different configuration directory than the account's own. This happens when `claude` is a wrapper script that removes `CLAUDE_CONFIG_DIR`. Logging in through it would sign in the whole Mac instead of one account, so the app stops. Set `CLAUDE_CODE_CLI` to the official binary itself (for example the `claude` or `claude.exe` inside the official installation), then reopen the app. A Finder-launched app reads it with `launchctl setenv CLAUDE_CODE_CLI /absolute/path` or `open --env CLAUDE_CODE_CLI=/absolute/path`.
+
+## Global switch did not happen
+
+- `GLOBAL_NOT_MANAGED`: the current global login is not one of your accounts, so after switching away nothing could switch it back. Click **Import current global login**, or add an account and log in with that email, then switch.
+- `TARGET_NOT_SIGNED_IN`: finish the official login for the selected account first.
+- `TARGET_IN_USE`, `HOME_IN_USE`: a session this app opened for one of the two accounts is still running. Close it first; two processes renewing one login invalidate each other.
+- `GLOBAL_REFRESHING`, `GLOBAL_CHANGED`, `SWITCH_BUSY`: the global login was renewing or changing at that moment. Wait a minute and retry.
+- `SWITCH_ROLLED_BACK`: the official status or the test request with the new account failed, and the previous global login was restored. Check the network and that the selected account's login still works (open it in its own window), then retry.
+- `SWITCH_ROLLBACK_FAILED`: the restore also failed. Run `claude` in a normal Terminal and use `/login` to sign in again, or switch global back to the previous account in the app.
+- `ACCOUNT_IS_GLOBAL`: the account is currently the global copy. Use an ordinary Claude window, or switch global to another account before opening it on its own or deleting it.
 
 ## Not logged in
 
@@ -46,7 +62,7 @@ A project launch asks the official CLI for authentication status in that account
 
 Run the official login in that account's own directory and finish it in the browser. The launcher's login command is `auth login` with no extra login flags. An API key or another provider left in the environment is not used as a substitute: those variables are removed from the launched process.
 
-The 0.1.0 window includes buttons for official login and for checking the official status. A dispatched login still has to be finished in Terminal and the official website.
+The 0.2.0 window includes buttons for official login and for checking the official status. A dispatched login still has to be finished in Terminal and the official website.
 
 ## Quota stays unknown
 
@@ -92,7 +108,7 @@ Other window messages:
 
 # 故障排查
 
-这些说明对应该仓库的 0.1.0。例子只用占位符，例如 `person@example.com` 和 `~/Projects/demo`。
+这些说明对应该仓库的 0.2.0。例子只用占位符，例如 `person@example.com` 和 `~/Projects/demo`。
 
 官方 CLI 的安装和登录：<https://code.claude.com/docs/en/quickstart> 与 <https://code.claude.com/docs/en/authentication>。
 
@@ -126,9 +142,25 @@ claude --version
 
 登录和开工需要控制 Terminal 的权限。第一次时，macOS 可能显示应用里写好的理由：为所选的本地账号和项目，在 Terminal 中打开官方 Claude Code CLI。
 
+应用会等你回应这个 macOS 提示最多两分钟。超时了就先处理提示，再点一次按钮。
+
 如果打不开 Terminal，核心会给出 `TERMINAL_OPEN_FAILED`，并提示检查自动化权限。打开系统设置，进入隐私与安全性，再进入自动化，允许这个应用控制 Terminal。改完权限后退出并重新打开应用。
 
 打开成功只表示 Terminal 接受了脚本。请在官方 CLI 里完成登录。启动器不监视这次登录。
+
+## 登录被拒绝：claude 命令不认账号目录
+
+`CLI_IGNORES_CONFIG_DIR` 表示应用找到的 `claude` 报出的配置目录不是这个账号自己的目录。通常是因为 `claude` 是一个会删掉 `CLAUDE_CONFIG_DIR` 的包装脚本。通过它登录会改掉整台 Mac 的登录，而不是只登这一个账号，所以应用停下了。把 `CLAUDE_CODE_CLI` 设成官方程序本身（例如官方安装目录里的 `claude` 或 `claude.exe`），再重新打开应用。从访达打开的应用可以用 `launchctl setenv CLAUDE_CODE_CLI /绝对路径`，或者 `open --env CLAUDE_CODE_CLI=/绝对路径` 读到它。
+
+## 全局没有切换成功
+
+- `GLOBAL_NOT_MANAGED`：现在的全局登录不在账号列表里，切走后就没有办法切回来。先点「导入当前全局登录」，或者添加账号后用那个邮箱登录，再切换。
+- `TARGET_NOT_SIGNED_IN`：先给选中的账号完成官方登录。
+- `TARGET_IN_USE`、`HOME_IN_USE`：本应用为这两个账号之一打开的会话还在运行。先关掉；同一份登录被两个进程续期会互相作废。
+- `GLOBAL_REFRESHING`、`GLOBAL_CHANGED`、`SWITCH_BUSY`：那一刻全局登录正在续期或变化。等一分钟再试。
+- `SWITCH_ROLLED_BACK`：官方状态或新账号的测试请求没通过，已经恢复原来的全局登录。检查网络，并确认选中账号的登录还有效（单独开它的窗口试一下），再重试。
+- `SWITCH_ROLLBACK_FAILED`：恢复也失败了。在普通终端运行 `claude`，用 `/login` 重新登录；或者在应用里把全局切回原来的账号。
+- `ACCOUNT_IS_GLOBAL`：这个账号现在就是全局副本。直接用普通 Claude 窗口；要单独打开或删除它，先把全局切到别的账号。
 
 ## 还没有登录
 
@@ -136,7 +168,7 @@ claude --version
 
 请在这个账号自己的目录里运行官方登录，并在浏览器里完成。启动器的登录命令是 `auth login`，没有额外登录参数。留在环境里的 API 密钥或其他提供方不会被拿来顶替：这些变量会从被启动的进程中去掉。
 
-0.1.0 的窗口有官方登录和检查状态按钮。派发之后，仍要在 Terminal 和官方网页里完成登录。
+0.2.0 的窗口有官方登录和检查状态按钮。派发之后，仍要在 Terminal 和官方网页里完成登录。
 
 ## 额度一直是未知
 

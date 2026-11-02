@@ -6,7 +6,8 @@ import { fail } from './errors.mjs';
 import { LIMITS, absolutePath, email, object, projectDirectory, text, uuid } from './validation.mjs';
 
 export const STATE_ENV = 'CCAC_STATE_DIR';
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
+const LOCK_STALE_MS = 120_000;
 
 function exists(file) {
   try { fs.lstatSync(file); return true; } catch (error) {
@@ -88,8 +89,17 @@ export function atomicWriteJSON(file, value, { io = fs } = {}) {
   }
 }
 
+// Version 1 files are upgraded in memory and saved as version 2 by the next write.
+export function upgradeState(state) {
+  if (state !== null && typeof state === 'object' && !Array.isArray(state) && state.version === 1) {
+    object(state, ['version', 'revision', 'accounts', 'projects']);
+    return { ...state, version: SCHEMA_VERSION, defaultAccountId: null, globalAccountId: null };
+  }
+  return state;
+}
+
 export function validateState(state) {
-  object(state, ['version', 'revision', 'accounts', 'projects']);
+  object(state, ['version', 'revision', 'accounts', 'projects', 'defaultAccountId', 'globalAccountId']);
   if (state.version !== SCHEMA_VERSION || !Number.isSafeInteger(state.revision) || state.revision < 0 ||
       !Array.isArray(state.accounts) || state.accounts.length > LIMITS.accounts ||
       !Array.isArray(state.projects) || state.projects.length > LIMITS.projects) {
@@ -114,7 +124,61 @@ export function validateState(state) {
       fail('INVALID_STATE', 'Last project reference is invalid.');
     }
   }
+  // globalAccountId records which account's login this app last placed in the
+  // Mac-wide default configuration; it is a hint, re-checked before every use.
+  for (const key of ['defaultAccountId', 'globalAccountId']) {
+    if (state[key] !== null && !accountIds.has(uuid(state[key]))) fail('INVALID_STATE', 'Account reference is invalid.');
+  }
   return state;
+}
+
+// A lock file holds its writer's PID. A lock whose writer is gone, or that is
+// older than staleMs, is removed so a killed process cannot block every later
+// write. The file is re-checked just before removal so a fresh lock created
+// by another process in the meantime is never taken away.
+export function acquireLock(file, { staleMs = LOCK_STALE_MS, code = 'STORE_BUSY',
+  message = 'Storage is locked. Retry after the other operation finishes.' } = {}) {
+  for (let attempt = 0; ; attempt += 1) {
+    let fd;
+    try { fd = fs.openSync(file, 'wx', 0o600); }
+    catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      if (attempt > 0 || !clearStaleLock(file, staleMs)) fail(code, message);
+      continue;
+    }
+    let own;
+    try { fs.writeSync(fd, String(process.pid)); own = fs.fstatSync(fd).ino; } finally { fs.closeSync(fd); }
+    return () => {
+      try { if (fs.lstatSync(file).ino === own) fs.unlinkSync(file); } catch { /* Already released. */ }
+    };
+  }
+}
+
+function clearStaleLock(file, staleMs) {
+  let stat;
+  let owner = NaN;
+  try {
+    stat = fs.lstatSync(file);
+    if (!stat.isFile() || stat.isSymbolicLink()) return false;
+    owner = Number(fs.readFileSync(file, 'utf8').trim());
+  } catch (error) {
+    return error.code === 'ENOENT';
+  }
+  const known = Number.isSafeInteger(owner) && owner > 0;
+  let alive = false;
+  if (known) {
+    try { process.kill(owner, 0); alive = true; } catch (error) { alive = error.code === 'EPERM'; }
+  }
+  // An unnamed lock may belong to a writer that has not recorded its PID yet.
+  if ((alive || !known) && Date.now() - stat.mtimeMs < staleMs) return false;
+  try {
+    const again = fs.lstatSync(file);
+    if (again.ino !== stat.ino || again.mtimeMs !== stat.mtimeMs) return false;
+    fs.unlinkSync(file);
+  } catch (error) {
+    return error.code === 'ENOENT';
+  }
+  return true;
 }
 
 export class Store {
@@ -133,7 +197,8 @@ export class Store {
         if (exists(this.stateFile)) return;
         privateDirectory(this.accountsDir, { create: true });
         if (fs.readdirSync(this.accountsDir).length) fail('INVALID_STATE', 'Account directories exist without metadata.');
-        atomicWriteJSON(this.stateFile, { version: SCHEMA_VERSION, revision: 0, accounts: [], projects: [] });
+        atomicWriteJSON(this.stateFile, { version: SCHEMA_VERSION, revision: 0, accounts: [], projects: [],
+          defaultAccountId: null, globalAccountId: null });
       });
     }
     this._read();
@@ -141,14 +206,8 @@ export class Store {
 
   _locked(operation) {
     privateDirectory(this.rootDir);
-    let fd;
-    try { fd = fs.openSync(this.lockFile, 'wx', 0o600); }
-    catch (error) {
-      if (error.code === 'EEXIST') fail('STORE_BUSY', 'Storage is locked. Retry after the other operation finishes.');
-      throw error;
-    }
-    try { return operation(); }
-    finally { fs.closeSync(fd); fs.unlinkSync(this.lockFile); }
+    const release = acquireLock(this.lockFile);
+    try { return operation(); } finally { release(); }
   }
 
   _configDir(id) {
@@ -159,7 +218,7 @@ export class Store {
   _read() {
     privateDirectory(this.rootDir);
     privateDirectory(this.accountsDir);
-    const state = validateState(readJSON(this.stateFile));
+    const state = validateState(upgradeState(readJSON(this.stateFile)));
     for (const account of state.accounts) {
       privateDirectory(path.join(this.accountsDir, account.id));
       privateDirectory(this._configDir(account.id));
@@ -229,6 +288,51 @@ export class Store {
     if (!project) fail('PROJECT_NOT_FOUND', 'Project was not found.');
     if (projectDirectory(project.path) !== project.path) fail('INVALID_DIRECTORY', 'The project path has changed.');
     return { ...project };
+  }
+
+  setDefaultAccount(accountId) {
+    if (accountId !== null) this.getAccount(accountId);
+    return this._mutate(state => {
+      if (accountId !== null && !state.accounts.some(item => item.id === accountId)) fail('ACCOUNT_NOT_FOUND', 'Account was not found.');
+      state.defaultAccountId = accountId;
+      return { defaultAccountId: accountId };
+    });
+  }
+
+  setGlobalAccount(accountId) {
+    return this._mutate(state => {
+      if (accountId !== null && !state.accounts.some(item => item.id === uuid(accountId))) fail('ACCOUNT_NOT_FOUND', 'Account was not found.');
+      state.globalAccountId = accountId;
+    });
+  }
+
+  // Removes the metadata and this app's private copy of the account folder.
+  // The caller removes the matching keychain item; the Claude account itself
+  // and every project folder are untouched.
+  removeAccount(accountId) {
+    const account = this.getAccount(accountId);
+    this._mutate(state => {
+      const index = state.accounts.findIndex(item => item.id === accountId);
+      if (index === -1) fail('ACCOUNT_NOT_FOUND', 'Account was not found.');
+      state.accounts.splice(index, 1);
+      if (state.defaultAccountId === accountId) state.defaultAccountId = null;
+      if (state.globalAccountId === accountId) state.globalAccountId = null;
+    });
+    const directory = path.join(this.accountsDir, accountId);
+    privateDirectory(directory);
+    fs.rmSync(directory, { recursive: true, force: true });
+    return { removed: true, accountId, configDir: account.configDir };
+  }
+
+  removeProject(projectId) {
+    uuid(projectId);
+    return this._mutate(state => {
+      const index = state.projects.findIndex(item => item.id === projectId);
+      if (index === -1) fail('PROJECT_NOT_FOUND', 'Project was not found.');
+      state.projects.splice(index, 1);
+      for (const account of state.accounts) if (account.lastProjectId === projectId) account.lastProjectId = null;
+      return { removed: true, projectId };
+    });
   }
 
   setLastProject(accountId, projectId) {

@@ -132,8 +132,8 @@
     <p>This project is not affiliated with or endorsed by Anthropic. It does not replace the official Claude Code CLI. The CLI still runs in Terminal.</p>
     <p lang="zh-Hans">本项目与 Anthropic 没有隶属或背书关系。它不代替官方 Claude Code CLI。CLI 仍然在 Terminal 里运行。</p>
     <div class="warn">
-      <p><strong>Version 0.1.0.</strong> The window can add local accounts, dispatch official login, check official status, open projects, configure an optional official status-line snapshot, and run read-only network observations after you click. It does not switch the Mac-wide account or contain an automatic account switcher. Missing quota data and unrun checks remain unknown or unverified.</p>
-      <p lang="zh-Hans"><strong>当前是 0.1.0。</strong>窗口可以添加本机账号、派发官方登录、检查官方状态、打开项目、配置可选的官方状态栏快照，并在你点击后进行只读网络观察。它不会切换整台 Mac 的默认账号，也没有自动换号。额度数据缺失时保持未知，未运行的检查保持未验证。</p>
+      <p><strong>Version 0.2.0.</strong> The window can add local accounts, show each account's green remaining-quota card, dispatch official login, check official status, switch the Mac-wide global account after you confirm (with a real test request and automatic restore on failure), mark a default account, import the current global login, delete accounts, open projects in Terminal or an existing Orca runtime, configure an optional official status-line snapshot, and run read-only network observations after you click. It never switches accounts on its own. Missing quota data and unrun checks remain unknown or unverified.</p>
+      <p lang="zh-Hans"><strong>当前是 0.2.0。</strong>窗口可以添加本机账号、按账号显示绿色剩余额度卡、派发官方登录、检查官方状态、在你确认后切换整台 Mac 的全局账号（会用真实测试请求核对，失败自动换回）、设为默认账号、导入当前全局登录、删除账号、把项目打开到系统 Terminal 或正在运行的 Orca、配置可选的官方状态栏快照，并在你点击后进行只读网络观察。它从不自己换号。额度数据缺失时保持未知，未运行的检查保持未验证。</p>
     </div>
     <p>Examples on this page use <code>person@example.com</code> and <code>~/Projects/demo</code>. They are placeholders. Do not put a real email, token, log, address, or home-folder path into a screenshot.</p>
     <p lang="zh-Hans">本页例子只用 <code>person@example.com</code> 和 <code>~/Projects/demo</code> 这种占位符。截图里不要放真实邮箱、令牌、日志、地址或家目录路径。</p>
@@ -144,6 +144,7 @@
       <li><a href="#account">Account 账号</a></li>
       <li><a href="#login">Login 登录</a></li>
       <li><a href="#project">Project 项目</a></li>
+      <li><a href="#orca">Orca</a></li>
       <li><a href="#launch">Launch 开工</a></li>
       <li><a href="#quota">Quota 额度</a></li>
       <li><a href="#network">Network 网络</a></li>
@@ -160,7 +161,7 @@
       <div class="pair">
         <article lang="en">
           <p class="lang">English</p>
-          <p>Download the <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg">Apple Silicon DMG</a> from <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0">v0.1.0</a>, open it, and drag <strong>Claude Code Account Center</strong> into <strong>Applications</strong>. The release also includes <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt">SHA-256 checksums</a>.</p>
+          <p>Download the <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.2.0/Claude-Code-Account-Center-0.2.0-macos-arm64.dmg">Apple Silicon DMG</a> from <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.2.0">v0.2.0</a>, open it, and drag <strong>Claude Code Account Center</strong> into <strong>Applications</strong>. The release also includes <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.2.0/SHA256SUMS.txt">SHA-256 checksums</a>.</p>
           <p>You need macOS 13 or newer, Node.js 20 or newer from <a href="https://nodejs.org/">nodejs.org</a>, and the official Claude Code CLI installed with <a href="https://code.claude.com/docs/en/quickstart">Anthropic's quickstart</a>. The app does not install those prerequisites.</p>
           <p>The DMG has a local ad-hoc signature, not a Developer ID signature or Apple notarization. If macOS shows a warning, read <a href="https://support.apple.com/en-us/102445">Apple's own page</a>. This guide does not tell you how to turn off Gatekeeper or remove quarantine attributes.</p>
           <p>To build instead, install Apple's command-line developer tools, then run these commands from the repository root. There are no npm dependencies.</p>
@@ -170,7 +171,7 @@ open "dist/Claude Code Account Center.app"</code></pre>
         </article>
         <article lang="zh-Hans">
           <p class="lang">中文</p>
-          <p>从 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.1.0">v0.1.0</a> 下载 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/Claude-Code-Account-Center-0.1.0-macos-arm64.dmg">Apple Silicon DMG</a>，打开后把 <strong>Claude Code Account Center</strong> 拖进 <strong>Applications（应用程序）</strong>。发布页也提供 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.1.0/SHA256SUMS.txt">SHA-256 校验文件</a>。</p>
+          <p>从 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/tag/v0.2.0">v0.2.0</a> 下载 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.2.0/Claude-Code-Account-Center-0.2.0-macos-arm64.dmg">Apple Silicon DMG</a>，打开后把 <strong>Claude Code Account Center</strong> 拖进 <strong>Applications（应用程序）</strong>。发布页也提供 <a href="https://github.com/xiaohe-sz/claude-code-account-center/releases/download/v0.2.0/SHA256SUMS.txt">SHA-256 校验文件</a>。</p>
           <p>你需要 macOS 13 或更新版本、<a href="https://nodejs.org/">nodejs.org</a> 提供的 Node.js 20 或更新版本，以及按 <a href="https://code.claude.com/docs/en/quickstart">Anthropic 官方快速开始</a>安装的 Claude Code CLI。应用不会替你安装这些前置软件。</p>
           <p>DMG 只有本机 ad-hoc 签名，没有 Developer ID 签名，也没有 Apple 公证。macOS 如果报警，请读 <a href="https://support.apple.com/en-us/102445">Apple 自己的说明</a>。本指南不写如何关闭 Gatekeeper 或删除隔离属性。</p>
           <p>如果要自己构建，先安装 Apple 命令行开发工具，再在仓库根目录运行以下命令。这个仓库没有 npm 依赖包。</p>
@@ -229,6 +230,24 @@ open "dist/Claude Code Account Center.app"</code></pre>
           <p class="lang">中文</p>
           <p>项目是一个已经存在的本机目录，例如 <code>~/Projects/demo</code>，再加上一个短标签。路径必须是你能进入的真实目录。同一个路径不会添加两次。存下来的路径只是启动器的元数据，不会上传。</p>
           <p>可以保存很多项目。每个账号最多记住一个上次项目。选中一个项目会记下它。之后的开工可以沿用。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="orca">
+      <h2>Open a project in Orca</h2>
+      <div class="pair">
+        <article lang="en">
+          <p class="lang">English</p>
+          <p>If Orca is installed and its runtime is running, the project card can import a ready local Orca project. Choose an account, then click <strong>Open in Orca</strong>. The launcher asks Orca to create a new terminal whose startup command points at that account's private configuration directory.</p>
+          <p>A new Orca tab is pinned to the account that created it. Open a second account in a second tab to work on two Claude Code accounts side by side. An existing tab is not silently rebound to another account, and Orca uses its own terminal UI.</p>
+          <p>The returned receipt means the terminal request was dispatched, not that login or the project succeeded. Read the Orca terminal and check the official status. If Orca is unavailable, the Orca action is hidden and Terminal remains available.</p>
+        </article>
+        <article lang="zh-Hans">
+          <p class="lang">中文</p>
+          <p>如果已经安装 Orca，而且它的运行服务正在运行，项目卡可以从 Orca 导入已经准备好的本机项目。选好账号，再点「在 Orca 打开」。启动器会让 Orca 新建一个终端，并把启动命令指向这个账号的私有配置目录。</p>
+          <p>新开的 Orca 标签固定使用创建它的账号。第二个账号开第二个标签，就可以并排使用两个 Claude Code 账号。已经存在的标签不会被偷偷改绑到另一个账号，界面仍然使用 Orca 自己的终端。</p>
+          <p>返回的回执只表示终端请求已经派发，不表示登录或项目已经成功。请看 Orca 终端，并核对官方登录状态。Orca 不可用时，这个入口会隐藏，系统 Terminal 入口仍然保留。</p>
         </article>
       </div>
     </section>
@@ -362,12 +381,12 @@ open "dist/Claude Code Account Center.app"</code></pre>
       <div class="pair">
         <article lang="en">
           <p class="lang">English</p>
-          <p>The reporting route is <a href="SECURITY.md">SECURITY.md</a>. Use a GitHub Security Advisory when private reporting is enabled. If it is not, open an Issue and leave out secrets. This launcher does not read official credential files, save tokens, or relay Claude.ai sessions. The documented status response is parsed in memory; only allowlisted fields reach the window, and the raw JSON is not persisted. It does not change the default account for the whole Mac, does not switch accounts automatically, and does not replace the official login.</p>
+          <p>The reporting route is <a href="SECURITY.md">SECURITY.md</a>. Use a GitHub Security Advisory when private reporting is enabled. If it is not, open an Issue and leave out secrets. The launcher reads or copies keychain logins only for an explicit global switch, import, or delete, and never displays, logs, stores in its own files, or sends them. It does not relay Claude.ai sessions. The documented status response is parsed in memory; only allowlisted fields reach the window, and the raw JSON is not persisted. It never switches accounts on its own and does not replace the official login.</p>
           <p>It does not change system DNS, TUN, or proxy settings. It does not bypass macOS permissions. Finding <code>claude</code> on disk is not a check that Anthropic signed that file. A finished network observation would not be a statement about account enforcement.</p>
         </article>
         <article lang="zh-Hans">
           <p class="lang">中文</p>
-          <p>报告方式在 <a href="SECURITY.md">SECURITY.md</a>。私人报告已启用时，走 GitHub Security Advisory。还没启用时，开一条 Issue，并且不要附上秘密。启动器不读取官方凭据文件，不保存令牌，也不中转 Claude.ai 会话。官方状态响应只在本机内存解析；窗口只收到允许列出的字段，原始 JSON 不会落盘。它不更换整台 Mac 的默认账号，不自动换号，也不代替官方登录。</p>
+          <p>报告方式在 <a href="SECURITY.md">SECURITY.md</a>。私人报告已启用时，走 GitHub Security Advisory。还没启用时，开一条 Issue，并且不要附上秘密。只有明确的全局切换、导入或删除操作，启动器才会读取或复制钥匙串里的登录；登录内容不显示、不记录、不写进启动器文件、不上传。它不中转 Claude.ai 会话。官方状态响应只在本机内存解析；窗口只收到允许列出的字段，原始 JSON 不会落盘。它不更换整台 Mac 的默认账号，不自动换号，也不代替官方登录。</p>
           <p>它不修改系统 DNS、TUN 或代理，也不绕过 macOS 权限。在磁盘上找到 <code>claude</code>，并不能证明那个文件由 Anthropic 签名。做完一次网络观察，也不说明平台会如何处理账号。</p>
         </article>
       </div>

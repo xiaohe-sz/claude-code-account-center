@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { atomicWriteJSON, privateDirectory, readJSON } from './store.mjs';
-import { absolutePath, executable, uuid } from './validation.mjs';
+import { absolutePath, executableAlias, preferredNodePath, uuid } from './validation.mjs';
 import { fail } from './errors.mjs';
 import { shellQuote } from './terminal.mjs';
 
@@ -130,11 +130,11 @@ function usageFile(store, accountId) {
 function statusLineCommand(store, accountId, nodePath) {
   const script = fileURLToPath(new URL('./usage-statusline.mjs', import.meta.url));
   if (!fs.statSync(script).isFile()) fail('RESOURCES_MISSING', 'The status-line component is unavailable.');
-  const node = executable(nodePath);
+  const node = executableAlias(nodePath);
   return ['/usr/bin/env', '-i', node, script, accountId, store.rootDir].map(shellQuote).join(' ');
 }
 
-export function configureUsage({ store, accountId, nodePath = process.execPath }, { readFile = fs.readFileSync } = {}) {
+export function configureUsage({ store, accountId, nodePath = preferredNodePath() }, { readFile = fs.readFileSync } = {}) {
   uuid(accountId);
   const account = store.getAccount(accountId);
   const settingsFile = path.join(account.configDir, 'settings.json');

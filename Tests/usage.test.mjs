@@ -199,3 +199,16 @@ test('tampered snapshots fail closed instead of returning extra fields', t => {
   }), { mode: 0o600 });
   assert.throws(() => usageSnapshot({ store, accountId: account.id }), { code: 'INVALID_STATE' });
 });
+
+test('a session-start status line without windows keeps an earlier open observation', async () => {
+  const { __testables } = await import('../Resources/core/usage-statusline.mjs');
+  const now = new Date('2026-11-01T10:00:00Z');
+  const open = { status: 'available', windows: { fiveHour: { usedPercentage: 20, resetsAt: now.getTime() / 1000 + 600 }, sevenDay: null } };
+  const expired = { status: 'available', windows: { fiveHour: { usedPercentage: 20, resetsAt: now.getTime() / 1000 - 1 }, sevenDay: null } };
+  const unknown = { status: 'unknown', windows: { fiveHour: null, sevenDay: null } };
+  assert.equal(__testables.keepsExisting(open, unknown, now), true);
+  assert.equal(__testables.keepsExisting(expired, unknown, now), false);
+  assert.equal(__testables.keepsExisting(null, unknown, now), false);
+  assert.equal(__testables.keepsExisting(open, { ...open }, now), false);
+  assert.equal(__testables.statusLineText({ status: 'available', windows: { fiveHour: { usedPercentage: 'x' } } }), 'CCAC usage unknown');
+});

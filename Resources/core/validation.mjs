@@ -69,3 +69,19 @@ export function executable(value) {
     fail('CLI_NOT_FOUND', 'The configured executable is unavailable.');
   }
 }
+
+// Like executable(), but returns the path as given. Saved commands keep a stable
+// alias such as /opt/homebrew/bin/node instead of a versioned Cellar target that
+// disappears after an upgrade.
+export function executableAlias(value) {
+  executable(value);
+  return value;
+}
+
+export function preferredNodePath() {
+  const invoked = process.argv0;
+  if (typeof invoked === 'string' && path.isAbsolute(invoked)) {
+    try { return executableAlias(invoked); } catch { /* Fall back to the resolved runtime. */ }
+  }
+  return process.execPath;
+}

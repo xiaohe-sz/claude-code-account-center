@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { Store } from './store.mjs';
 import { OfficialAdapter } from './official.mjs';
 import { validateRunnerRequest } from './terminal.mjs';
+import { assertNotGlobalCopy } from './global.mjs';
 import { LIMITS } from './validation.mjs';
 import { fail, publicError } from './errors.mjs';
 
@@ -14,8 +15,11 @@ export async function runTerminal(request, { env = process.env, spawnCLI = spawn
   const adapter = new OfficialAdapter({ cliPath: request.cliPath, env });
   const project = request.action === 'launch' ? store.resolveProject(account.id, request.projectId) : null;
   if (request.action === 'launch') {
+    assertNotGlobalCopy(store, account, env.HOME || undefined);
     const status = await adapter.status(account);
     if (!status.ready) fail('AUTH_NOT_READY', 'Sign in with the expected Claude account before launching this project.');
+  } else {
+    await adapter.assertHonorsConfigDir(account);
   }
   const spec = adapter.invocation(account, { action: request.action, cwd: project?.path ?? account.configDir });
   return new Promise((resolve, reject) => {

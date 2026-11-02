@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { OfficialAdapter } from '../Resources/core/official.mjs';
-import { APPLE_SCRIPT, createTerminalPlan, openTerminal, shellQuote, validateRunnerRequest } from '../Resources/core/terminal.mjs';
+import { APPLE_SCRIPT, TERMINAL_DISPATCH_TIMEOUT_MS, createTerminalPlan, openTerminal, shellQuote, validateRunnerRequest } from '../Resources/core/terminal.mjs';
 import { fixture, validStatus } from './helpers.mjs';
 
 function setup(t, name = 'project') {
@@ -65,9 +65,15 @@ test('login uses only official login arguments and needs no project', t => {
   const f = setup(t); const capture = path.join(f.root, 'capture.json');
   const plan = createTerminalPlan({ ...f.options, projectId: undefined, action: 'login' });
   assert.equal(plan.cwd, f.account.configDir);
-  const result = spawnSync('/bin/sh', ['-c', plan.command], { env: { ...f.env, FAKE_CAPTURE: capture }, encoding: 'utf8' });
+  // A fresh folder: an honest CLI reports it logged out, in this folder.
+  const fresh = JSON.stringify({ loggedIn: false, authMethod: 'none', apiProvider: 'firstParty', configDirectory: f.account.configDir });
+  const result = spawnSync('/bin/sh', ['-c', plan.command], { env: { ...f.env, FAKE_CAPTURE: capture, FAKE_STATUS: fresh, FAKE_EXIT: '1' }, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(fs.readFileSync(capture)).args, ['auth', 'login']);
+  // A CLI that omits its folder yet claims a login for a never-used folder is a wrapper.
+  const wrapper = spawnSync('/bin/sh', ['-c', plan.command], { env: { ...f.env, FAKE_CAPTURE: capture }, encoding: 'utf8' });
+  assert.equal(wrapper.status, 1);
+  assert.match(wrapper.stderr, /CLI_IGNORES_CONFIG_DIR/);
   assert.equal(f.store.getAccount(f.account.id).lastProjectId, null);
 });
 
@@ -77,7 +83,7 @@ test('openTerminal dispatches static AppleScript with a separate argument and re
     called += 1; assert.equal(file, '/usr/bin/osascript');
     assert.equal(args[1], APPLE_SCRIPT); assert.equal(args[2], '--');
     assert.equal(args[3], createTerminalPlan(f.options).command);
-    assert.equal(options.timeoutMs, 15_000);
+    assert.equal(options.timeoutMs, TERMINAL_DISPATCH_TIMEOUT_MS);
     return { code: 0, stdout: 'tab id 1' };
   } });
   assert.equal(called, 1); assert.equal(result.opened, true); assert.equal(result.execution, 'unconfirmed');

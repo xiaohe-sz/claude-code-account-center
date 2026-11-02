@@ -1,6 +1,6 @@
 # Privacy
 
-Claude Code Account Center is an unofficial local tool. Version 0.1.0 keeps launcher metadata on this Mac. It does not add its own analytics, and it does not send launcher metadata to the author.
+Claude Code Account Center is an unofficial local tool. Version 0.2.0 keeps launcher metadata on this Mac. It does not add its own analytics, and it does not send launcher metadata to the author.
 
 [中文在后文。](#中文)
 
@@ -29,9 +29,11 @@ Each account also has a directory:
 accounts/<account-id>/config
 ```
 
-That directory is the `CLAUDE_CONFIG_DIR` for processes this launcher starts. The launcher creates the directory. It does not put a token in it. If you later complete an official login, the official CLI may write its own files there. Those files stay on this Mac unless you or the official CLI move them. This launcher does not read them to copy a session, and it does not upload them.
+That directory is the `CLAUDE_CONFIG_DIR` for processes this launcher starts. The launcher creates the directory. It does not put a token in it. If you later complete an official login, the official CLI may write its own files there. Those files stay on this Mac unless you or the official CLI move them. This launcher does not upload them. It reads or writes a login only for the explicit actions below.
 
-A status check runs the documented official `auth status --json` command and parses its response in memory. Only the allowlisted authentication fields reach the window. The raw response is not written to launcher storage or included in public errors. This status-output parsing is distinct from reading official credential files, which the launcher does not do.
+A status check runs the documented official `auth status --json` command and parses its response in memory. Only the allowlisted authentication fields reach the window. The raw response is not written to launcher storage or included in public errors. This status-output parsing is distinct from reading a login.
+
+**Global switch, import, and delete.** Only when you click **Switch global to this account**, **Import current global login**, or **Delete account** does the launcher read, copy, or remove claude.ai logins in the macOS keychain (`Claude Code-credentials` and the per-folder `Claude Code-credentials-<8 hex>` items the official CLI creates), and read or replace the `oauthAccount` field of `~/.claude.json` and of an account's own `.claude.json`. These values stay in memory for the duration of that action. They are not displayed, logged, written to launcher files, or sent anywhere. The switch's final check sends one ordinary request (`Reply with exactly: OK`) through the official CLI to Anthropic, like any `claude -p` call.
 
 The window can show the metadata above, including the configuration path, because that is the local snapshot. Do not publish that view.
 
@@ -70,7 +72,7 @@ These checks do not change system DNS, TUN, or proxy settings. One finished chec
 
 # 隐私
 
-Claude Code Account Center 是非官方的本机工具。0.1.0 把启动器自己的元数据留在这台 Mac 上。它不加自己的统计，也不把这些元数据发给作者。
+Claude Code Account Center 是非官方的本机工具。0.2.0 把启动器自己的元数据留在这台 Mac 上。它不加自己的统计，也不把这些元数据发给作者。
 
 官方 CLI 是另一个程序。你启动它之后，网络使用以 Anthropic 的文档为准，不以这份文件为准：
 
@@ -97,9 +99,11 @@ Claude Code Account Center 是非官方的本机工具。0.1.0 把启动器自�
 accounts/<账号 id>/config
 ```
 
-这个目录就是启动器启动的进程所用的 `CLAUDE_CONFIG_DIR`。目录由启动器创建。启动器不往里面放令牌。你之后如果完成官方登录，官方 CLI 可能往里面写入它自己的文件。这些文件留在这台 Mac 上，除非你或官方 CLI 把它们移走。启动器不会为了复制会话去读它们，也不会上传它们。
+这个目录就是启动器启动的进程所用的 `CLAUDE_CONFIG_DIR`。目录由启动器创建。启动器不往里面放令牌。你之后如果完成官方登录，官方 CLI 可能往里面写入它自己的文件。这些文件留在这台 Mac 上，除非你或官方 CLI 把它们移走。启动器不会上传它们；只有下面列出的明确操作才会读写登录。
 
-状态检查会运行官方文档规定的 `auth status --json`，并在本机内存解析响应。窗口只收到允许列出的认证状态字段。原始响应不会写进启动器存储，也不会进入公开错误信息。解析这个状态响应不等于读取官方凭据文件；启动器不读取那些凭据文件。
+状态检查会运行官方文档规定的 `auth status --json`，并在本机内存解析响应。窗口只收到允许列出的认证状态字段。原始响应不会写进启动器存储，也不会进入公开错误信息。解析这个状态响应不等于读取登录。
+
+**全局切换、导入和删除。** 只有你点「切全局到此号」「导入当前全局登录」或「删除账号」时，启动器才会读取、复制或删除 macOS 钥匙串里的 claude.ai 登录（`Claude Code-credentials`，以及官方 CLI 为每个目录建的 `Claude Code-credentials-<8 位十六进制>`），并读取或替换 `~/.claude.json` 和账号自己 `.claude.json` 里的 `oauthAccount` 字段。这些内容只在这一次操作期间留在内存里，不显示、不记录、不写进启动器文件、不上传。切换最后的核对会通过官方 CLI 向 Anthropic 发一条普通请求（`Reply with exactly: OK`），和任何一次 `claude -p` 一样。
 
 窗口可以显示上面的元数据，包括配置目录路径，因为那就是本地快照。不要把这个窗口公开出去。
 

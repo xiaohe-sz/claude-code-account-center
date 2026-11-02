@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
@@ -7,6 +8,7 @@ import { privateDirectory } from './store.mjs';
 
 export const LOGIN_ARGS = Object.freeze(['auth', 'login']);
 export const STATUS_ARGS = Object.freeze(['auth', 'status', '--json']);
+export const PROBE_ARGS = Object.freeze(['-p', 'Reply with exactly: OK', '--output-format', 'json', '--no-session-persistence']);
 
 // Discovery locates the user-selected installation; it is not an authenticity
 // signature check. No executable is run as part of discovery.
@@ -29,8 +31,9 @@ export function discoverClaude({ cliPath, env = process.env, homeDir = os.homedi
   fail('CLI_NOT_FOUND', 'Install the official Claude Code CLI or configure its absolute path.');
 }
 
+// configDir null selects the Mac-wide default configuration (no CLAUDE_CONFIG_DIR).
 export function cleanEnvironment(env, configDir) {
-  privateDirectory(configDir);
+  if (configDir !== null) privateDirectory(configDir);
   const clean = {};
   for (const [key, value] of Object.entries(env)) {
     if (typeof value !== 'string' || value.includes('\0') || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue;
@@ -40,7 +43,7 @@ export function cleanEnvironment(env, configDir) {
         /^(NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|LD_PRELOAD|LD_LIBRARY_PATH|AWS_BEARER_TOKEN_BEDROCK)$/i.test(key)) continue;
     clean[key] = value;
   }
-  clean.CLAUDE_CONFIG_DIR = configDir;
+  if (configDir !== null) clean.CLAUDE_CONFIG_DIR = configDir;
   return clean;
 }
 
@@ -125,6 +128,58 @@ export class OfficialAdapter {
     const directory = projectDirectory(cwd);
     const args = action === 'login' ? [...LOGIN_ARGS] : action === 'status' ? [...STATUS_ARGS] : [];
     return { file: executable(this.installation.path), args, cwd: directory, env: cleanEnvironment(this.env, account.configDir) };
+  }
+
+  // A wrapper script named claude can drop CLAUDE_CONFIG_DIR and silently use
+  // the Mac-wide login. Refuse before an account login could overwrite it.
+  async assertHonorsConfigDir(account) {
+    const status = await this.status(account);
+    // A CLI that does not report its folder is still caught when it claims a
+    // login for a folder in which no login has ever completed.
+    let ownLogin = false;
+    try {
+      const own = JSON.parse(fs.readFileSync(path.join(account.configDir, '.claude.json'), 'utf8'));
+      ownLogin = typeof own?.oauthAccount?.emailAddress === 'string';
+    } catch { ownLogin = false; }
+    if (status.matchesConfigDirectory === false || (status.configDirectory === null && status.loggedIn && !ownLogin)) {
+      fail('CLI_IGNORES_CONFIG_DIR', 'The claude command ignores the account folder. Point the app at the official binary.');
+    }
+    return status;
+  }
+
+  globalInvocation(args, cwd) {
+    const home = this.env.HOME && path.isAbsolute(this.env.HOME) ? this.env.HOME : os.homedir();
+    return { file: executable(this.installation.path), args: [...args], cwd: projectDirectory(cwd ?? home), env: cleanEnvironment(this.env, null) };
+  }
+
+  async globalStatus() {
+    const { file, args, ...options } = this.globalInvocation(STATUS_ARGS);
+    const result = await this.run(file, args, options);
+    const status = parseAuthStatus(result.stdout);
+    if (result.code !== 0 && !(result.code === 1 && !status.loggedIn)) {
+      fail('CLI_EXECUTION_FAILED', 'The official authentication check failed.');
+    }
+    return status;
+  }
+
+  // One real, minimal request through the default login, from an empty private
+  // folder so no project instructions are loaded. Only success is reported.
+  async probeGlobal() {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ccac-probe-'));
+    try {
+      const { file, args, ...options } = this.globalInvocation(PROBE_ARGS, fs.realpathSync(directory));
+      let result;
+      try { result = await this.run(file, args, { ...options, timeoutMs: 120_000, maxBytes: 1_048_576 }); }
+      catch { return false; }
+      if (result.code !== 0) return false;
+      try {
+        const reply = JSON.parse(result.stdout);
+        return reply?.is_error === false && typeof reply.result === 'string' && reply.result.length > 0;
+      } catch { return false; }
+    } finally {
+      // Only the private temporary folder created above is removed.
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
   }
 
   async status(account) {
